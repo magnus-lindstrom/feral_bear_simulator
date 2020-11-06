@@ -1,0 +1,73 @@
+mantle_of_wicked_revenge:
+  slot: shoulders
+  armor: 170
+  strength: 16
+  agility: 30
+  stamina: 14
+guise_of_the_devourer:
+  slot: head
+  armor: 250
+  strength: 17
+  agility: 19
+  stamina: 36
+  dodge: 1
+onyxia_tooth_pendant:
+  slot: neck
+  agility: 19
+  stamina: 9
+  crit: 1
+  hit: 1
+cloak_of_concentrated_hatred:
+  slot: back
+  armor: 56
+  strength: 11
+  agility: 16
+  stamina: 15
+  hit: 1
+malfurions_blessed_bulwark:
+  slot: chest
+  armor: 392
+  strength: 40
+  stamina: 22
+wristguards_of_stability:
+  slot: wrist
+  armor: 86
+  strength: 24
+  stamina: 8
+gloves_of_enforcement:
+  slot: hands
+  armor: 140
+  strength: 28
+  agility: 20
+  stamina: 6
+  hit: 1
+thick_qirajihide_belt:
+  slot: waist
+  armor: 186
+  strength: 10
+  agility: 17
+  stamina: 20
+genesis_trousers:
+  slot: legs
+  armor: 207
+  strength: 12
+  agility: 12
+  stamina: 22
+  crit: 1
+boots_of_the_shadow_flame:
+  slot: feet
+  armor: 286
+  stamina: 22
+  attack_power: 44
+  hit: 2
+signet_ring_of_the_bronze_dragonflight:
+  slot: finger
+  agility: 24
+  stamina: 13
+  hit: 1
+master_dragonslayers_ring:
+  stamina: 14
+  attack_power: 48
+  hit: 1
+earthstrike:
+  attack_power: 47 # atp per minute
