@@ -66,8 +66,10 @@ signet_ring_of_the_bronze_dragonflight:
   stamina: 13
   hit: 1
 master_dragonslayers_ring:
+  slot: finger
   stamina: 14
   attack_power: 48
   hit: 1
 earthstrike:
-  attack_power: 47 # atp per minute
+  slot: trinket
+  attack_power_per_two_minutes: 93 # atp per minute

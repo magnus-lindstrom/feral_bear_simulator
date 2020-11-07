@@ -1,4 +1,5 @@
 from enum import Enum, auto
+from collections import Counter
 import yaml
 
 
@@ -13,7 +14,7 @@ class Slots(Enum):
     waist = auto()
     legs = auto()
     feet = auto()
-    ring = auto()
+    finger = auto()
     trinket = auto()
     main_hand = auto()
     off_hand = auto()
@@ -22,6 +23,7 @@ class Slots(Enum):
 
 class Attributes(Enum):
     armor = auto()
+    dodge = auto()
     strength = auto()
     stamina = auto()
     agility = auto()
@@ -29,32 +31,87 @@ class Attributes(Enum):
     crit = auto()
     slot = auto()
     attack_power = auto()
+    attack_power_per_two_minutes = auto()
+
+
+def validate_items(items):
+    invalid_item = False
+    slot_list = [s.name for s in Slots]
+    attribute_list = [a.name for a in Attributes]
+    for item_name, properties in items.items():
+        # all properties must be defined and allowed
+        for property_name in properties.keys():
+            if property_name not in attribute_list:
+                print('Item {} has an illegal property: {}'.format(item_name, property_name))
+        # the slot attribute must have a valid value
+        if properties['slot'] not in slot_list:
+            invalid_item = True
+            print('Item {} has illegal slot value: {}'.format(item_name, properties['slot']))
+
+    if invalid_item:
+        exit(1)
+
+
+def add_default_values(items):
+    attribute_list = [a.name for a in Attributes]
+    for name, item in items.items():
+        for attribute in attribute_list:
+            if attribute not in item.keys():
+                item[attribute] = 0
+
+    return items
+
+
+class Item:
+    armor = 0
+    dodge = 0
+    strength = 0
+    stamina = 0
+    agility = 0
+    hit = 0
+    crit = 0
+    slot = 0
+    attack_power = 0
+    attack_power_per_two_minutes = 0
 
 
 class Wardrobe:
-    items = None
+    with open("items.yaml") as f:
+        all_items = yaml.load(f, Loader=yaml.FullLoader)
+    all_items = add_default_values(all_items)
+    validate_items(all_items)
+    equipped_items = []
 
     def set_current_items(self):
-        # Just loads the entire character atm
-        with open("items.yaml") as f:
-            self.items = yaml.load(f, Loader=yaml.FullLoader)
+        self.equipped_items = []
+        self.equipped_items.append(self.all_items['mantle_of_wicked_revenge'])
+        self.equipped_items.append(self.all_items['guise_of_the_devourer'])
+        self.equipped_items.append(self.all_items['onyxia_tooth_pendant'])
+        self.equipped_items.append(self.all_items['cloak_of_concentrated_hatred'])
+        self.equipped_items.append(self.all_items['malfurions_blessed_bulwark'])
+        self.equipped_items.append(self.all_items['wristguards_of_stability'])
+        self.equipped_items.append(self.all_items['gloves_of_enforcement'])
+        self.equipped_items.append(self.all_items['thick_qirajihide_belt'])
+        self.equipped_items.append(self.all_items['genesis_trousers'])
+        self.equipped_items.append(self.all_items['boots_of_the_shadow_flame'])
+        self.equipped_items.append(self.all_items['signet_ring_of_the_bronze_dragonflight'])
+        self.equipped_items.append(self.all_items['master_dragonslayers_ring'])
+        self.equipped_items.append(self.all_items['earthstrike'])
 
-    def validate_items(self):
-        invalid_item = False
-        slot_list = [s.name for s in Slots]
-        attribute_list = [a.name for a in Attributes]
-        for item_name, properties in self.items.items():
-            # all properties must be defined and allowed
-            for property_name in properties.keys():
-                if property_name not in attribute_list:
-                    print('Item {} has an illegal property: {}'.format(item_name, property_name))
-            # the slot attribute must have a valid value
-            if properties['slot'] not in slot_list:
-                invalid_item = True
-                print('Item {} has illegal slot value: {}'.format(item_name, properties['slot']))
+    def validate_item_composition(self):
+        used_slots = [item['slot'] for item in self.equipped_items]
+        slot_counter = Counter(used_slots)
+        for slot_name in [s.name for s in Slots]:
+            if slot_name in ['finger', 'trinket']:
+                assert slot_counter[slot_name] <= 2
+            else:
+                assert slot_counter[slot_name] <= 1
 
-        if invalid_item:
-            exit(1)
+        if slot_counter['two_hand'] == 1:
+            assert slot_counter['main_hand'] == 0
+            assert slot_counter['off_hand'] == 0
+        if slot_counter['main_hand'] == 1:
+            assert slot_counter['two_hand'] == 0
 
 
 class Stats:
@@ -64,30 +121,41 @@ class Stats:
     dodge = 0
     armor = 0
 
-    def add_to_stats(self, item):
-        self.attack_power += item['attack_power']
-        self.attack_power += 2 * item['strength']
+    def add_to_stats(self, items, fight_info):
+        if fight_info.world_buffs:
+            print('no support yet for world buffs')
+            exit(1)
 
-        self.crit += item['crit']
-        self.crit += item['agility'] / 20
+        for item in items:
+            self.attack_power += item['attack_power']
+            self.attack_power += 2 * item['strength']
+            if fight_info.fight_length < 120:
+                self.attack_power += item['attack_power_per_two_minutes'] \
+                                     / fight_info.fight_length * 120
+            else:
+                # assume inf fight length if longer than 2min
+                self.attack_power += item['attack_power_per_two_minutes']
 
-        self.hit += item['hit']
+            self.crit += item['crit']
+            self.crit += item['agility'] / 20
 
-        self.dodge += item['dodge']
+            self.hit += item['hit']
 
-        self.armor += item['armor']
+            self.dodge += item['dodge']
+
+            self.armor += item['armor'] * fight_info.armor_multiplier
 
 
 class Character:
-    wardrobe = None
+    wardrobe = Wardrobe()
     stats = Stats()
 
     def set_current_items(self):
         self.wardrobe.set_current_items()
+        self.wardrobe.validate_item_composition()
 
-    def set_stats(self):
-        for item in self.wardrobe.items:
-            self.stats.add_to_stats(item)
+    def set_stats(self, fight_info):
+        self.stats.add_to_stats(self.wardrobe.equipped_items, fight_info)
 
 
 
