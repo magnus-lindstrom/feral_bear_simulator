@@ -24,11 +24,13 @@ class Slots(Enum):
 class Attributes(Enum):
     armor = auto()
     dodge = auto()
+    defense = auto()
     strength = auto()
     stamina = auto()
     agility = auto()
     hit = auto()
     crit = auto()
+    attack_speed = auto()
     slot = auto()
     attack_power = auto()
     attack_power_per_two_minutes = auto()
@@ -62,19 +64,6 @@ def add_default_values(items):
     return items
 
 
-class Item:
-    armor = 0
-    dodge = 0
-    strength = 0
-    stamina = 0
-    agility = 0
-    hit = 0
-    crit = 0
-    slot = 0
-    attack_power = 0
-    attack_power_per_two_minutes = 0
-
-
 class Wardrobe:
     with open("items.yaml") as f:
         all_items = yaml.load(f, Loader=yaml.FullLoader)
@@ -84,9 +73,9 @@ class Wardrobe:
 
     def set_current_items(self):
         self.equipped_items = []
-        self.equipped_items.append(self.all_items['mantle_of_wicked_revenge'])
         self.equipped_items.append(self.all_items['guise_of_the_devourer'])
         self.equipped_items.append(self.all_items['onyxia_tooth_pendant'])
+        self.equipped_items.append(self.all_items['mantle_of_wicked_revenge'])
         self.equipped_items.append(self.all_items['cloak_of_concentrated_hatred'])
         self.equipped_items.append(self.all_items['malfurions_blessed_bulwark'])
         self.equipped_items.append(self.all_items['wristguards_of_stability'])
@@ -97,6 +86,9 @@ class Wardrobe:
         self.equipped_items.append(self.all_items['signet_ring_of_the_bronze_dragonflight'])
         self.equipped_items.append(self.all_items['master_dragonslayers_ring'])
         self.equipped_items.append(self.all_items['earthstrike'])
+        self.equipped_items.append(self.all_items['drake_fang_talisman'])
+        self.equipped_items.append(self.all_items['blessed_qiraji_warhammer'])
+        self.equipped_items.append(self.all_items['tome_of_knowledge'])
 
     def validate_item_composition(self):
         used_slots = [item['slot'] for item in self.equipped_items]
@@ -115,11 +107,17 @@ class Wardrobe:
 
 
 class Stats:
+    attack_speed = 0
     attack_power = 0
-    crit = 0
+    crit = 13.15  # leader of the pack, sharpened claws, possible base agility
     hit = 0
-    dodge = 0
-    armor = 0
+    dodge = 5.15
+    armor = 130
+    defense = 300
+    hit_points = 1483  # base hp
+    hit_points += 1240  # from dire bear form
+    hit_points -= 180  # needed to make things add up
+    hit_points += 69 * 10 * 1.2  # base stamina
 
     def add_to_stats(self, items, fight_info):
         if fight_info.world_buffs:
@@ -135,15 +133,44 @@ class Stats:
             else:
                 # assume inf fight length if longer than 2min
                 self.attack_power += item['attack_power_per_two_minutes']
-
             self.crit += item['crit']
-            self.crit += item['agility'] / 20
-
             self.hit += item['hit']
-
             self.dodge += item['dodge']
-
+            self.dodge += item['defense'] * 0.04
             self.armor += item['armor'] * fight_info.armor_multiplier
+            self.agility_addition(item['agility'])
+            self.hit_points += item['stamina'] * 10 * 1.2  # heart of the wild
+
+            assert item['attack_speed'] == 0, 'no support for item attack speed yet'
+
+    def add_enchants(self, fight_info):
+        # head enchant
+        self.attack_speed /= 1.01
+        # shoulder enchant
+        self.attack_power += 30
+        # back
+        self.agility_addition(3)
+        # chest, agility
+        self.agility_addition(4)
+        # chest, strength
+        self.attack_power += 2 * 4
+        # chest, stamina
+        self.hit_points += 4 * 10 * 1.2
+        # wrists
+        self.attack_power = 2 * 9
+        # hands
+        self.agility_addition(15)
+        # legs
+        self.attack_speed /= 1.01
+        # feet
+        self.agility_addition(7)
+        # weapon
+        self.attack_power += 2 * 15
+
+    def agility_addition(self, agi):
+        self.crit += agi / 20
+        self.dodge += agi / 20
+        self.armor += agi * 2
 
 
 class Character:
@@ -156,9 +183,4 @@ class Character:
 
     def set_stats(self, fight_info):
         self.stats.add_to_stats(self.wardrobe.equipped_items, fight_info)
-
-
-
-
-
-
+        self.stats.add_enchants(fight_info)

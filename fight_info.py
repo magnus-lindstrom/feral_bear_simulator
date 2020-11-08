@@ -3,3 +3,4 @@ class FightInfo:
         self.fight_length = fight_length
         self.world_buffs = world_buffs
         self.armor_multiplier = 4.6 * (1 + thick_hide * 0.02)
+

@@ -13,7 +13,7 @@ guise_of_the_devourer:
   dodge: 1
 onyxia_tooth_pendant:
   slot: neck
-  agility: 19
+  agility: 12
   stamina: 9
   crit: 1
   hit: 1
@@ -73,3 +73,20 @@ master_dragonslayers_ring:
 earthstrike:
   slot: trinket
   attack_power_per_two_minutes: 93 # atp per minute
+drake_fang_talisman:
+  slot: trinket
+  attack_power: 56 # atp per minute
+  hit: 2
+  dodge: 1
+blessed_qiraji_warhammer:
+  slot: main_hand
+  armor: 70
+  strength: 10
+  stamina: 12
+  attack_power: 280
+  defense: 8
+tome_of_knowledge:
+  slot: off_hand
+  strength: 8
+  agility: 8
+  stamina: 8
