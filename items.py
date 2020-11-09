@@ -64,12 +64,39 @@ def add_default_values(items):
     return items
 
 
+def get_sorted_items_dict(items):
+    new_item_dict = {}
+    for name, item in items.items():
+        if item['slot'] not in new_item_dict.keys():
+            new_item_dict[item['slot']] = {}
+        new_item_dict[item['slot']][name] = item
+    return new_item_dict
+
+
+def get_item_count_by_slot(sorted_items):
+    item_count_dict = {}
+    for slot in sorted_items.keys():
+        if slot not in item_count_dict.keys():
+            item_count_dict[slot] = 0
+        item_count_dict[slot] += 1
+    return item_count_dict
+
+
 class Wardrobe:
     with open("items.yaml") as f:
         all_items = yaml.load(f, Loader=yaml.FullLoader)
     all_items = add_default_values(all_items)
     validate_items(all_items)
+
+    sorted_items = get_sorted_items_dict(all_items)
+    item_count_by_slot = get_item_count_by_slot(sorted_items)
     equipped_items = []
+
+    def iterate_over_combinations(self):
+        current_combination = self.item_count_by_slot.copy()
+        for slot in self.item_count_by_slot.keys():
+            for item_nr in range(self.item_count_by_slot[slot])
+                # TODO keep going here
 
     def set_current_items(self):
         self.equipped_items = []
@@ -175,12 +202,16 @@ class Stats:
 
 class Character:
     wardrobe = Wardrobe()
-    stats = Stats()
+    stats = None
 
     def set_current_items(self):
         self.wardrobe.set_current_items()
         self.wardrobe.validate_item_composition()
 
     def set_stats(self, fight_info):
+        self.stats = Stats()
         self.stats.add_to_stats(self.wardrobe.equipped_items, fight_info)
         self.stats.add_enchants(fight_info)
+
+    def iterate_over_combinations(self):
+        self.wardrobe.iterate_over_combinations()
