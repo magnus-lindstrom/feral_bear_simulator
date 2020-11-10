@@ -73,15 +73,6 @@ def get_sorted_items_dict(items):
     return new_item_dict
 
 
-def get_item_count_by_slot(sorted_items):
-    item_count_dict = {}
-    for slot in sorted_items.keys():
-        if slot not in item_count_dict.keys():
-            item_count_dict[slot] = 0
-        item_count_dict[slot] += 1
-    return item_count_dict
-
-
 class Wardrobe:
     with open("items.yaml") as f:
         all_items = yaml.load(f, Loader=yaml.FullLoader)
@@ -89,6 +80,7 @@ class Wardrobe:
     validate_items(all_items)
 
     sorted_items = get_sorted_items_dict(all_items)
+    all_sets = set_generator(sorted_items)
     item_count_by_slot = get_item_count_by_slot(sorted_items)
     equipped_items = []
 
