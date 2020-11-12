@@ -13,7 +13,14 @@ def get_item_iterator(sorted_items: dict):
     while sets_left_to_explore:
         current_set = []
         for i_gear_type, i_piece in enumerate(current_set_indeces):
-            current_set.append(items_list[i_gear_type][i_piece])
+            if type(items_list[i_gear_type][i_piece]) is list:
+                # rings, trinkets and weapons are a list of pairs of items
+                # so, extend
+                current_set.extend(items_list[i_gear_type][i_piece])
+            else:
+                # the other items are dicts, append
+                current_set.append(items_list[i_gear_type][i_piece])
+
         yield current_set
 
         sets_left_to_explore = increase_index_and_check_if_more_sets(

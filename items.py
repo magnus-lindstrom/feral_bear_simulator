@@ -3,6 +3,7 @@ from collections import Counter
 import yaml
 
 from statistics import *
+from itertools import combinations
 
 
 class Slots(Enum):
@@ -78,21 +79,52 @@ def add_default_values_and_check_names(items):
     return items
 
 
-def print_set_info(items: list, set_number: int):
-    list_of_names = [item['name'] for item in items]
-    string = '\n'.join(list_of_names)
-    print('set {}:'.format(set_number))
-    print(string)
-
-
 def get_items_by_slot(items):
-    # returns {slot1: [item1, item1], slot2: [item2, item2]}
+    # returns {slot1: [item1, item2], slot2: [item1, item2]}
+    # when slot == ring/trinket/weapon, item is a list of a set of items, such as 2 rings
+
     new_item_dict = {}
-    for _, item in items.items():
+    for key, item in items.items():
         if item['slot'] not in new_item_dict.keys():
             new_item_dict[item['slot']] = []
         new_item_dict[item['slot']].append(item)
+
+    make_rings_and_trinkets_into_pairs(new_item_dict)
+    make_weapons_into_single_slot(new_item_dict)
     return new_item_dict
+
+
+def make_weapons_into_single_slot(item_dict):
+    # make a custom field "weapon" for either two hander or one hander + held in offhand
+    item_combos = []
+    if 'two_hand' in item_dict.keys():
+        # the two handers have to be in a list each, since the other weapons will be
+        item_combos.extend([[wep] for wep in item_dict['two_hand']])
+
+    if ('main_hand' in item_dict.keys()) and ('off_hand' in item_dict.keys()):
+        for mh in item_dict['main_hand']:
+            for oh in item_dict['off_hand']:
+                item_combos.append([mh, oh])
+    elif 'main_hand' in item_dict.keys():
+        for mh in item_dict['main_hand']:
+            item_combos.append([mh])
+    elif 'off_hand' in item_dict.keys():
+        for oh in item_dict['off_hand']:
+            item_combos.append([oh])
+
+    item_dict['weapon'] = item_combos
+    for key in ['two_hand', 'main_hand', 'off_hand']:
+        if key in item_dict.keys():
+            del item_dict[key]
+
+
+def make_rings_and_trinkets_into_pairs(item_dict):
+    for slot in ['finger', 'trinket']:
+        if slot in item_dict.keys():
+            list_of_items = item_dict[slot]
+            item_pairs = combinations(list_of_items, 2)
+            list_of_item_pairs = [list(item_pair) for item_pair in item_pairs]
+            item_dict[slot] = list_of_item_pairs
 
 
 class Stats:
@@ -106,7 +138,6 @@ class Stats:
         self.crit = 13.15  # leader of the pack, sharpened claws, possible base agility
         self.dodge = 5.15
         self.armor = 130
-        self.defense = 300
         self.hit_points = 1483  # base hp
         self.hit_points += 1240  # from dire bear form
         self.hit_points -= 180  # needed to make things add up
@@ -114,7 +145,18 @@ class Stats:
 
         self.enemy_parry_chance = 14  # (%)
         self.enemy_dodge_chance = 6.5  # (%)
-        self.chance_to_miss = 8  # (%)
+        self.chance_to_miss = 9  # (%)
+
+    def print_stats(self):
+        string = '\n'.join(['Attack speed: {:.2f}'.format(self.attack_speed),
+                            'Attack power: {}'.format(self.attack_power),
+                            'Crit: {:.2f}'.format(self.crit),
+                            'Dodge: {:.2f}'.format(self.dodge),
+                            'Armor: {:.0f}'.format(self.armor),
+                            'Hit points: {:.0f}'.format(self.hit_points),
+                            'Miss chance: {}'.format(self.chance_to_miss)])
+        print('### Current Stats from set ###')
+        print(string)
 
     def add_to_stats(self, item, fight_info):
 
@@ -127,11 +169,7 @@ class Stats:
             # assume inf fight length if longer than 2min
             self.attack_power += item['attack_power_per_two_minutes']
         self.crit += item['crit']
-        if self.chance_to_miss == 8:
-            # first hit is removed
-            self.chance_to_miss -= max(item['hit'] - 1, 0)
-        else:
-            self.chance_to_miss = max(self.chance_to_miss - item['hit'], 0)
+        self.chance_to_miss = max(self.chance_to_miss - item['hit'], 0)
         self.dodge += item['dodge']
         self.dodge += item['defense'] * 0.04
         self.armor += item['armor'] * fight_info.armor_multiplier
@@ -170,6 +208,9 @@ class Stats:
         self.armor += agi * 2
 
     def get_tps(self):
+        if self.chance_to_miss == 9:
+            self.chance_to_miss = 8
+
         base_attack_dmg = 126.5
         avg_melee_hit = base_attack_dmg \
                         + self.attack_power * 2.5 / 14
@@ -192,10 +233,19 @@ class Character:
         self.equipped_items = []
         self.stats.add_enchants()
 
+    def print_stats(self):
+        self.stats.print_stats()
+
     def reset_character_gear_and_stats(self):
         self.stats = Stats(self.fight_info.is_fully_buffed)
         self.equipped_items = []
         self.stats.add_enchants()
+
+    def print_equipped_set(self):
+        list_of_names = [item['name'] for item in self.equipped_items]
+        string = '\n'.join(list_of_names)
+        print('Equipped set:')
+        print(string)
 
     def add_items_and_validate_set(self, items):
         if type(items) is not list:
@@ -233,10 +283,10 @@ current_set_names = [
     'mantle_of_wicked_revenge',
     'cloak_of_concentrated_hatred',
     'malfurions_blessed_bulwark',
-    'wristguards_of_stability',
+    'qiraji_execution_bracers',
     'gloves_of_enforcement',
     'thick_qirajihide_belt',
-    'genesis_trousers'
+    'genesis_trousers',
     'boots_of_the_shadow_flame',
     'signet_ring_of_the_bronze_dragonflight',
     'master_dragonslayers_ring',

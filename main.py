@@ -9,24 +9,28 @@ def search_for_best_combo():
     item_set_iterator = get_item_iterator(items_by_slot)
     character = Character(fight_info)
 
-    tps_vector = []
+    highest_tps = 0
     for i_set, item_set in enumerate(item_set_iterator):
-        print_set_info(item_set, i_set)
         character.reset_character_gear_and_stats()
         character.add_items_and_validate_set(item_set)
         tps = character.stats.get_tps()
-        tps_vector.append(tps)
-        print('Threat per second: {:.2f}'.format(tps))
-
+        if tps > highest_tps:
+            highest_tps = tps
+            print('New record TPS: {:.2f}'.format(tps))
+            character.print_equipped_set()
+            character.print_stats()
 
 
 def single_set():
     fight_info = FightInfo(fight_length=60, is_fully_buffed=False, thick_hide=2)
-    character = Character()
-    character.set_current_items()
-    character.set_stats(fight_info)
-
+    character = Character(fight_info)
+    all_items = get_items_dict()
+    character.set_current_items(all_items)
+    tps = character.stats.get_tps()
+    print('TPS: {:.2f}'.format(tps))
+    character.print_equipped_set()
+    character.print_stats()
 
 if __name__ == '__main__':
-    # single_set()
-    search_for_best_combo()
+    single_set()
+    # search_for_best_combo()

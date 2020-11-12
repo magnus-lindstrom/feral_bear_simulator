@@ -9,6 +9,18 @@ guise_of_the_devourer:
   dodge: 1
 
 ### neck
+mark_of_cthun:
+  name: "Mark of C'thun"
+  slot: neck
+  stamina: 24
+  defense: 10
+  dodge: 1
+  hit: 1
+prestors_talisman_of_connivery:
+  name: "Prestor's Talisman of Connivery"
+  slot: neck
+  agility: 30
+  hit: 1
 onyxia_tooth_pendant:
   name: "Onyxia tooth pendant"
   slot: neck
@@ -25,6 +37,12 @@ mantle_of_wicked_revenge:
   strength: 16
   agility: 30
   stamina: 14
+truestrike_shoulders:
+  name: "Truestrike Shoulders"
+  slot: shoulders
+  armor: 129
+  hit: 2
+  attack_power: 24
 
 ### back
 cloak_of_concentrated_hatred:
@@ -45,12 +63,14 @@ malfurions_blessed_bulwark:
   stamina: 22
 
 ### wrists
-wristguards_of_stability:
-  name: "Wristguards of stability"
+qiraji_execution_bracers:
+  name: "Qiraji Execution Bracers"
   slot: wrist
-  armor: 86
-  strength: 24
-  stamina: 8
+  armor: 103
+  strength: 15
+  agility: 16
+  stamina: 14
+  hit: 1
 
 ### gloves
 gloves_of_enforcement:
@@ -91,6 +111,12 @@ boots_of_the_shadow_flame:
   hit: 2
 
 ### finger
+band_of_accuria:
+  name: "Band of Accuria"
+  slot: finger
+  agility: 16
+  stamina: 10
+  hit: 2
 signet_ring_of_the_bronze_dragonflight:
   name: "Signet ring of the bronze dragonflight"
   slot: finger
@@ -103,6 +129,25 @@ master_dragonslayers_ring:
   stamina: 14
   attack_power: 48
   hit: 1
+ring_of_emperor_vek_lor:
+  name: "Ring of Emperor Vek'lor"
+  slot: finger
+  armor: 100
+  agility: 12
+  stamina: 18
+  defense: 9
+heacy_dark_iron_ring:
+  name: "Heavy Dark Iron Ring"
+  slot: finger
+  armor: 110
+  stamina: 20
+  defense: 5
+circle_of_applied_force:
+  name: "Circle of Applied Force"
+  slot: finger
+  strength: 12
+  agility: 22
+  stamina: 9
 
 ### trinket
 earthstrike:
@@ -112,9 +157,22 @@ earthstrike:
 drake_fang_talisman:
   name: "Drake fang talisman"
   slot: trinket
-  attack_power: 56 # atp per minute
+  attack_power: 56
   hit: 2
   dodge: 1
+mark_of_tyranny:
+  name: "Mark of Tyranny"
+  slot: trinket
+  armor: 180
+  dodge: 1
+
+### two hand
+unyielding_maul:
+  name: "Blessed qiraji warhammer"
+  slot: two_hand
+  armor: 250
+  stamina: 12
+  defense: 8
 
 ### main hand
 blessed_qiraji_warhammer:
