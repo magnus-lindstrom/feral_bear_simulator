@@ -1,91 +1,134 @@
-mantle_of_wicked_revenge:
-  slot: shoulders
-  armor: 170
-  strength: 16
-  agility: 30
-  stamina: 14
+### head
 guise_of_the_devourer:
+  name: "Guise of the devourer"
   slot: head
   armor: 250
   strength: 17
   agility: 19
   stamina: 36
   dodge: 1
+
+### neck
 onyxia_tooth_pendant:
+  name: "Onyxia tooth pendant"
   slot: neck
   agility: 12
   stamina: 9
   crit: 1
   hit: 1
+
+### shoulders
+mantle_of_wicked_revenge:
+  name: "Mantle of wicked revenge"
+  slot: shoulders
+  armor: 170
+  strength: 16
+  agility: 30
+  stamina: 14
+
+### back
 cloak_of_concentrated_hatred:
+  name: "Cloak of concentrated hatred"
   slot: back
   armor: 56
   strength: 11
   agility: 16
   stamina: 15
   hit: 1
+
+### chest
 malfurions_blessed_bulwark:
+  name: "Malfurions blessed bulwark"
   slot: chest
   armor: 392
   strength: 40
   stamina: 22
+
+### wrists
 wristguards_of_stability:
+  name: "Wristguards of stability"
   slot: wrist
   armor: 86
   strength: 24
   stamina: 8
+
+### gloves
 gloves_of_enforcement:
+  name: "Gloves of enforcement"
   slot: hands
   armor: 140
   strength: 28
   agility: 20
   stamina: 6
   hit: 1
+
+### belt
 thick_qirajihide_belt:
+  name: "Thick qirajihide belt"
   slot: waist
   armor: 186
   strength: 10
   agility: 17
   stamina: 20
+
+### legs
 genesis_trousers:
+  name: "Genesis trousers"
   slot: legs
   armor: 207
   strength: 12
   agility: 12
   stamina: 22
   crit: 1
+
+### feet
 boots_of_the_shadow_flame:
+  name: "Boots of the shadow flame"
   slot: feet
   armor: 286
   stamina: 22
   attack_power: 44
   hit: 2
+
+### finger
 signet_ring_of_the_bronze_dragonflight:
+  name: "Signet ring of the bronze dragonflight"
   slot: finger
   agility: 24
   stamina: 13
   hit: 1
 master_dragonslayers_ring:
+  name: "Master dragonslayers ring"
   slot: finger
   stamina: 14
   attack_power: 48
   hit: 1
+
+### trinket
 earthstrike:
+  name: "Earthstrike"
   slot: trinket
   attack_power_per_two_minutes: 93 # atp per minute
 drake_fang_talisman:
+  name: "Drake fang talisman"
   slot: trinket
   attack_power: 56 # atp per minute
   hit: 2
   dodge: 1
+
+### main hand
 blessed_qiraji_warhammer:
+  name: "Blessed qiraji warhammer"
   slot: main_hand
   armor: 70
   strength: 10
   stamina: 12
   attack_power: 280
   defense: 8
+
+### off hand
 tome_of_knowledge:
+  name: "Tome of knowledge"
   slot: off_hand
   strength: 8
   agility: 8

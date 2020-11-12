@@ -2,6 +2,8 @@ from enum import Enum, auto
 from collections import Counter
 import yaml
 
+from statistics import *
+
 
 class Slots(Enum):
     head = auto()
@@ -22,18 +24,27 @@ class Slots(Enum):
 
 
 class Attributes(Enum):
-    armor = auto()
-    dodge = auto()
-    defense = auto()
-    strength = auto()
-    stamina = auto()
     agility = auto()
-    hit = auto()
-    crit = auto()
-    attack_speed = auto()
-    slot = auto()
+    armor = auto()
     attack_power = auto()
     attack_power_per_two_minutes = auto()
+    attack_speed = auto()
+    crit = auto()
+    defense = auto()
+    dodge = auto()
+    hit = auto()
+    name = auto()
+    slot = auto()
+    stamina = auto()
+    strength = auto()
+
+
+def get_items_dict():
+    with open("items.yaml") as f:
+        all_items = yaml.load(f, Loader=yaml.FullLoader)
+    all_items = add_default_values_and_check_names(all_items)
+    validate_items(all_items)
+    return all_items
 
 
 def validate_items(items):
@@ -54,9 +65,12 @@ def validate_items(items):
         exit(1)
 
 
-def add_default_values(items):
+def add_default_values_and_check_names(items):
     attribute_list = [a.name for a in Attributes]
     for name, item in items.items():
+        if 'name' not in item.keys():
+            print('item missing name element: {}'.format(name))
+            exit(1)
         for attribute in attribute_list:
             if attribute not in item.keys():
                 item[attribute] = 0
@@ -64,105 +78,69 @@ def add_default_values(items):
     return items
 
 
-def get_sorted_items_dict(items):
+def print_set_info(items: list, set_number: int):
+    list_of_names = [item['name'] for item in items]
+    string = '\n'.join(list_of_names)
+    print('set {}:'.format(set_number))
+    print(string)
+
+
+def get_items_by_slot(items):
+    # returns {slot1: [item1, item1], slot2: [item2, item2]}
     new_item_dict = {}
-    for name, item in items.items():
+    for _, item in items.items():
         if item['slot'] not in new_item_dict.keys():
-            new_item_dict[item['slot']] = {}
-        new_item_dict[item['slot']][name] = item
+            new_item_dict[item['slot']] = []
+        new_item_dict[item['slot']].append(item)
     return new_item_dict
 
 
-class Wardrobe:
-    with open("items.yaml") as f:
-        all_items = yaml.load(f, Loader=yaml.FullLoader)
-    all_items = add_default_values(all_items)
-    validate_items(all_items)
-
-    sorted_items = get_sorted_items_dict(all_items)
-    all_sets = set_generator(sorted_items)
-    item_count_by_slot = get_item_count_by_slot(sorted_items)
-    equipped_items = []
-
-    def iterate_over_combinations(self):
-        current_combination = self.item_count_by_slot.copy()
-        for slot in self.item_count_by_slot.keys():
-            for item_nr in range(self.item_count_by_slot[slot])
-                # TODO keep going here
-
-    def set_current_items(self):
-        self.equipped_items = []
-        self.equipped_items.append(self.all_items['guise_of_the_devourer'])
-        self.equipped_items.append(self.all_items['onyxia_tooth_pendant'])
-        self.equipped_items.append(self.all_items['mantle_of_wicked_revenge'])
-        self.equipped_items.append(self.all_items['cloak_of_concentrated_hatred'])
-        self.equipped_items.append(self.all_items['malfurions_blessed_bulwark'])
-        self.equipped_items.append(self.all_items['wristguards_of_stability'])
-        self.equipped_items.append(self.all_items['gloves_of_enforcement'])
-        self.equipped_items.append(self.all_items['thick_qirajihide_belt'])
-        self.equipped_items.append(self.all_items['genesis_trousers'])
-        self.equipped_items.append(self.all_items['boots_of_the_shadow_flame'])
-        self.equipped_items.append(self.all_items['signet_ring_of_the_bronze_dragonflight'])
-        self.equipped_items.append(self.all_items['master_dragonslayers_ring'])
-        self.equipped_items.append(self.all_items['earthstrike'])
-        self.equipped_items.append(self.all_items['drake_fang_talisman'])
-        self.equipped_items.append(self.all_items['blessed_qiraji_warhammer'])
-        self.equipped_items.append(self.all_items['tome_of_knowledge'])
-
-    def validate_item_composition(self):
-        used_slots = [item['slot'] for item in self.equipped_items]
-        slot_counter = Counter(used_slots)
-        for slot_name in [s.name for s in Slots]:
-            if slot_name in ['finger', 'trinket']:
-                assert slot_counter[slot_name] <= 2
-            else:
-                assert slot_counter[slot_name] <= 1
-
-        if slot_counter['two_hand'] == 1:
-            assert slot_counter['main_hand'] == 0
-            assert slot_counter['off_hand'] == 0
-        if slot_counter['main_hand'] == 1:
-            assert slot_counter['two_hand'] == 0
-
-
 class Stats:
-    attack_speed = 0
-    attack_power = 0
-    crit = 13.15  # leader of the pack, sharpened claws, possible base agility
-    hit = 0
-    dodge = 5.15
-    armor = 130
-    defense = 300
-    hit_points = 1483  # base hp
-    hit_points += 1240  # from dire bear form
-    hit_points -= 180  # needed to make things add up
-    hit_points += 69 * 10 * 1.2  # base stamina
 
-    def add_to_stats(self, items, fight_info):
-        if fight_info.world_buffs:
+    def __init__(self, fully_buffed: bool):
+        if fully_buffed:
             print('no support yet for world buffs')
             exit(1)
+        self.attack_speed = 2.5
+        self.attack_power = 0
+        self.crit = 13.15  # leader of the pack, sharpened claws, possible base agility
+        self.dodge = 5.15
+        self.armor = 130
+        self.defense = 300
+        self.hit_points = 1483  # base hp
+        self.hit_points += 1240  # from dire bear form
+        self.hit_points -= 180  # needed to make things add up
+        self.hit_points += 69 * 10 * 1.2  # base stamina
 
-        for item in items:
-            self.attack_power += item['attack_power']
-            self.attack_power += 2 * item['strength']
-            if fight_info.fight_length < 120:
-                self.attack_power += item['attack_power_per_two_minutes'] \
-                                     / fight_info.fight_length * 120
-            else:
-                # assume inf fight length if longer than 2min
-                self.attack_power += item['attack_power_per_two_minutes']
-            self.crit += item['crit']
-            self.hit += item['hit']
-            self.dodge += item['dodge']
-            self.dodge += item['defense'] * 0.04
-            self.armor += item['armor'] * fight_info.armor_multiplier
-            self.agility_addition(item['agility'])
-            self.hit_points += item['stamina'] * 10 * 1.2  # heart of the wild
+        self.enemy_parry_chance = 14  # (%)
+        self.enemy_dodge_chance = 6.5  # (%)
+        self.chance_to_miss = 8  # (%)
 
-            assert item['attack_speed'] == 0, 'no support for item attack speed yet'
+    def add_to_stats(self, item, fight_info):
 
-    def add_enchants(self, fight_info):
+        self.attack_power += item['attack_power']
+        self.attack_power += 2 * item['strength']
+        if fight_info.fight_length < 120:
+            self.attack_power += item['attack_power_per_two_minutes'] \
+                                 / fight_info.fight_length * 120
+        else:
+            # assume inf fight length if longer than 2min
+            self.attack_power += item['attack_power_per_two_minutes']
+        self.crit += item['crit']
+        if self.chance_to_miss == 8:
+            # first hit is removed
+            self.chance_to_miss -= max(item['hit'] - 1, 0)
+        else:
+            self.chance_to_miss = max(self.chance_to_miss - item['hit'], 0)
+        self.dodge += item['dodge']
+        self.dodge += item['defense'] * 0.04
+        self.armor += item['armor'] * fight_info.armor_multiplier
+        self.agility_addition(item['agility'])
+        self.hit_points += item['stamina'] * 10 * 1.2  # heart of the wild
+
+        assert item['attack_speed'] == 0, 'no support for item attack speed yet'
+
+    def add_enchants(self):
         # head enchant
         self.attack_speed /= 1.01
         # shoulder enchant
@@ -191,19 +169,79 @@ class Stats:
         self.dodge += agi / 20
         self.armor += agi * 2
 
+    def get_tps(self):
+        base_attack_dmg = 126.5
+        avg_melee_hit = base_attack_dmg \
+                        + self.attack_power * 2.5 / 14
+        avg_maul = avg_melee_hit + 128
+        avg_maul_with_misses = avg_maul * \
+                               (100 - self.enemy_parry_chance
+                                    - self.enemy_dodge_chance
+                                    - self.chance_to_miss) / 100
+        avg_maul_incl_crit = avg_maul_with_misses * (1 + self.crit/100)
+        dps = avg_maul_incl_crit / self.attack_speed
+        tps = dps * 1.45 * 1.7  # assuming 5/5 feral instinct
+        return tps
+
 
 class Character:
-    wardrobe = Wardrobe()
-    stats = None
 
-    def set_current_items(self):
-        self.wardrobe.set_current_items()
-        self.wardrobe.validate_item_composition()
+    def __init__(self, fight_info):
+        self.fight_info = fight_info
+        self.stats = Stats(fight_info.is_fully_buffed)
+        self.equipped_items = []
+        self.stats.add_enchants()
 
-    def set_stats(self, fight_info):
-        self.stats = Stats()
-        self.stats.add_to_stats(self.wardrobe.equipped_items, fight_info)
-        self.stats.add_enchants(fight_info)
+    def reset_character_gear_and_stats(self):
+        self.stats = Stats(self.fight_info.is_fully_buffed)
+        self.equipped_items = []
+        self.stats.add_enchants()
 
-    def iterate_over_combinations(self):
-        self.wardrobe.iterate_over_combinations()
+    def add_items_and_validate_set(self, items):
+        if type(items) is not list:
+            items = [items]
+        for item in items:
+            self.equipped_items.append(item)
+            self.stats.add_to_stats(item, self.fight_info)
+        self.validate_item_composition()
+
+    def set_current_items(self, all_items):
+        self.reset_character_gear_and_stats()
+        self.add_items_and_validate_set(
+            [all_items[item_name] for item_name in current_set_names]
+        )
+
+    def validate_item_composition(self):
+        used_slots = [item['slot'] for item in self.equipped_items]
+        slot_counter = Counter(used_slots)
+        for slot_name in [s.name for s in Slots]:
+            if slot_name in ['finger', 'trinket']:
+                assert slot_counter[slot_name] <= 2
+            else:
+                assert slot_counter[slot_name] <= 1
+
+        if slot_counter['two_hand'] == 1:
+            assert slot_counter['main_hand'] == 0
+            assert slot_counter['off_hand'] == 0
+        if slot_counter['main_hand'] == 1:
+            assert slot_counter['two_hand'] == 0
+
+
+current_set_names = [
+    'guise_of_the_devourer',
+    'onyxia_tooth_pendant',
+    'mantle_of_wicked_revenge',
+    'cloak_of_concentrated_hatred',
+    'malfurions_blessed_bulwark',
+    'wristguards_of_stability',
+    'gloves_of_enforcement',
+    'thick_qirajihide_belt',
+    'genesis_trousers'
+    'boots_of_the_shadow_flame',
+    'signet_ring_of_the_bronze_dragonflight',
+    'master_dragonslayers_ring',
+    'earthstrike',
+    'drake_fang_talisman',
+    'blessed_qiraji_warhammer',
+    'tome_of_knowledge'
+    ]
