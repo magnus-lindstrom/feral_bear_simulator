@@ -1,3 +1,6 @@
+from numpy import prod
+
+
 def get_item_iterator(sorted_items: dict):
     items_list = list(sorted_items.values())
     item_count = get_item_count_by_slot(sorted_items)
@@ -19,6 +22,11 @@ def get_item_iterator(sorted_items: dict):
 
         sets_left_to_explore = increase_index_and_check_if_more_sets(
             current_set_indeces, item_count)
+
+
+def get_nr_of_set_combinations(items_by_slot):
+    nr_sets = prod([len(val) for val in items_by_slot.values()])
+    return nr_sets
 
 
 def increase_index_and_check_if_more_sets(current_set_indeces, item_count):

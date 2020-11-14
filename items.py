@@ -26,7 +26,8 @@ class Item:
     def __init__(self, name: str, slot: Slots, agility=0,
                  arcane_resistance=0, armor=0, attack_power=0,
                  attack_power_per_two_minutes=0, attack_speed=0,
-                 attack_speed_per_two_minutes=0.0, crit=0,
+                 attack_speed_tmp_increase=0, attack_speed_tmp_duration=0,
+                 attack_speed_tmp_cd=0, crit=0,
                  defense=0, dodge=0, fire_resistance=0,
                  frost_resistance=0, hit=0, nature_resistance=0,
                  shadow_resistance=0, stamina=0, strength=0, tags=None):
@@ -36,7 +37,9 @@ class Item:
         self.attack_power = attack_power
         self.attack_power_per_two_minutes = attack_power_per_two_minutes
         self.attack_speed = attack_speed
-        self.attack_speed_per_two_minutes = attack_speed_per_two_minutes
+        self.attack_speed_tmp_increase = attack_speed_tmp_increase
+        self.attack_speed_tmp_duration = attack_speed_tmp_duration  # (s)
+        self.attack_speed_tmp_cd = attack_speed_tmp_cd
         self.crit = crit
         self.defense = defense
         self.dodge = dodge
@@ -64,8 +67,9 @@ class Attributes(Enum):
     armor = auto()
     attack_power = auto()
     attack_power_per_two_minutes = auto()
-    attack_speed = auto()
-    attack_speed_per_two_minutes = auto()
+    attack_speed_tmp_increase = auto()
+    attack_speed_tmp_duration = auto()
+    attack_speed_tmp_cd = auto()
     crit = auto()
     defense = auto()
     dodge = auto()
@@ -168,8 +172,8 @@ class Items:
 
         # only keep the items that has no exclude tags, unless it also has an include tag
         items = [item for item in items
-                 if any(excl_tag in item.tags for excl_tag in exclude_tags)
-                 or any(incl_tag in item.tags for incl_tag in include_tags)]
+                 if not any([excl_tag in item.tags for excl_tag in exclude_tags])
+                 or any([incl_tag in item.tags for incl_tag in include_tags])]
         return items
 
     # head
@@ -200,7 +204,8 @@ class Items:
         stamina=24,
         defense=10,
         dodge=1,
-        hit=1
+        hit=1,
+        tags=['def']
     )
     prestors_talisman_of_connivery = Item(
         name="Prestor's Talisman of Connivery",
@@ -435,14 +440,16 @@ class Items:
         armor=100,
         agility=12,
         stamina=18,
-        defense=9
+        defense=9,
+        tags=['def']
     )
     heavy_dark_iron_ring = Item(
         name="Heavy Dark Iron Ring",
         slot=Slots.finger,
         armor=110,
         stamina=20,
-        defense=5
+        defense=5,
+        tags=['def']
     )
     circle_of_applied_force = Item(
         name="Circle of Applied Force",
@@ -450,12 +457,6 @@ class Items:
         strength=12,
         agility=22,
         stamina=9
-    )
-    seal_of_the_gurubashi_berserker = Item(
-        name="Seal of the Gurubashi Berserker",
-        slot=Slots.finger,
-        stamina=13,
-        attack_power=40
     )
     hailstone_band = Item(
         name="Hailstone Band",
@@ -478,7 +479,7 @@ class Items:
         armor=140,
         stamina=24,
         hit=1,
-        tags=['naxx']
+        tags=['naxx', 'def']
     )
     band_of_reanimation = Item(
         name="Band of Reanimation",
@@ -507,7 +508,8 @@ class Items:
         slot=Slots.trinket,
         armor=180,
         dodge=1,
-        arcane_resistance=10
+        arcane_resistance=10,
+        tags=['def']
     )
     heart_of_the_scale = Item(
         name= "Heart of the Scale",
@@ -522,22 +524,25 @@ class Items:
         fire_resistance=20,
         frost_resistance=20,
         nature_resistance=20,
-        shadow_resistance=20
+        shadow_resistance=20,
+        tags=['def']
     )
     kiss_of_the_spider = Item(
         name="Kiss of the Spider",
         slot=Slots.trinket,
         crit=1,
         hit=1,
-        attack_speed_per_two_minutes=2.5,  # TODO check if this makes sense
-        tags=['naxx']
+        attack_speed_tmp_increase=20,
+        attack_speed_tmp_duration=15,
+        attack_speed_tmp_cd=120,
+        tags=['naxx', 'kots']
     )
     slayers_crest = Item(
         name="Slayer's Crest",
         slot=Slots.trinket,
         attack_power=64,
         attack_power_per_two_minutes=43,
-        tags=['naxx']
+        tags=['naxx', 'slayers_crest']
     )
     # TODO: add a mode of fighting undead in fight_info, and make atp against undeads
     # mark_of_the_champion = Item(
@@ -553,7 +558,8 @@ class Items:
         slot=Slots.two_hand,
         armor=250,
         stamina=12,
-        defense=8
+        defense=8,
+        tags=['def']
     )
 
     # main hand

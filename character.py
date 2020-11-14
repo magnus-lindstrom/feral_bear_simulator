@@ -1,16 +1,21 @@
 from collections import Counter
+import logging
 
 from items import *
 
 
 class Stats:
 
-    def __init__(self, fully_buffed: bool):
-        if fully_buffed:
+    def __init__(self, fight_info):
+        if fight_info.is_fully_buffed:
             print('no support yet for world buffs')
             exit(1)
+        self.fight_length = fight_info.fight_length
         self.attack_speed = 2.5
         self.attack_power = 104 + 180 + 90  # base + bear bonus + predatory strikes
+        self.attack_speed_tmp_increase = 0
+        self.attack_speed_tmp_duration = 0
+        self.attack_speed_tmp_cd = 0
         self.crit = 13.15  # leader of the pack, sharpened claws, possible base agility
         self.dodge = 5.15  # night elf
         self.armor = 130
@@ -36,8 +41,8 @@ class Stats:
                             'Armor: {:.0f}'.format(self.armor),
                             'Hit points: {:.0f}'.format(self.hit_points),
                             'Miss chance: {}'.format(self.chance_to_miss)])
-        print('### Current Stats from set ###')
-        print(string)
+        logging.debug('### Current Stats from set ###')
+        logging.debug(string)
 
     def add_to_stats(self, item: Item, fight_info):
 
@@ -64,6 +69,14 @@ class Stats:
         else:
             # assume inf fight length if longer than 2min
             self.attack_power += item.attack_power_per_two_minutes
+
+        if item.attack_speed_tmp_increase > 0:
+            if self.attack_speed_tmp_increase > 0:
+                print('No support for more than one item with attack speed increase.')
+                exit(1)
+            self.attack_speed_tmp_increase = item.attack_speed_tmp_increase
+            self.attack_speed_tmp_duration = item.attack_speed_tmp_duration
+            self.attack_speed_tmp_cd = item.attack_speed_tmp_cd
 
         assert item.attack_speed == 0, 'no support for item attack speed yet'
 
@@ -115,6 +128,17 @@ class Stats:
         avg_maul_incl_crit = avg_maul_with_misses * (1 + self.crit/100)
         dps = avg_maul_incl_crit / self.attack_speed
         tps = dps * 1.45 * 1.7  # assuming 5/5 feral instinct
+
+        if self.attack_speed_tmp_increase > 0:
+            if self.fight_length > self.attack_speed_tmp_cd:
+                time_without_buff = self.attack_speed_tmp_cd - self.attack_speed_tmp_duration
+            else:
+                time_without_buff = self.fight_length - self.attack_speed_tmp_duration
+            factor = (100 + self.attack_speed_tmp_increase) / 100
+            tps *= ((factor * self.attack_speed_tmp_duration
+                     + time_without_buff)
+                    / self.fight_length)
+
         return tps
 
 
@@ -122,7 +146,7 @@ class Character:
 
     def __init__(self, fight_info):
         self.fight_info = fight_info
-        self.stats = Stats(fight_info.is_fully_buffed)
+        self.stats = Stats(fight_info)
         self.equipped_items = []
         self.stats.add_enchants()
 
@@ -130,16 +154,16 @@ class Character:
         self.stats.print_stats()
 
     def reset_character_gear_and_stats(self):
-        self.stats = Stats(self.fight_info.is_fully_buffed)
+        self.stats = Stats(self.fight_info)
         self.equipped_items = []
         self.stats.add_enchants()
 
     def print_equipped_set(self):
-        print('Equipped set:')
+        logging.debug('Equipped set:')
         for slot in Slots:
             for item in self.equipped_items:
                 if item.slot == slot:
-                    print('{:-<13} {}'.format(slot.name, item.name))
+                    logging.debug('{:-<13} {}'.format(slot.name, item.name))
 
     def add_items_and_validate_set(self, items):
         if type(items) is not list:
