@@ -7,9 +7,6 @@ from items import *
 class Stats:
 
     def __init__(self, fight_info):
-        if fight_info.is_fully_buffed:
-            print('no support yet for world buffs')
-            exit(1)
         self.fight_length = fight_info.fight_length
         self.attack_speed = 2.5
         self.attack_power = 104 + 180 + 90  # base + bear bonus + predatory strikes
@@ -28,10 +25,34 @@ class Stats:
         self.hit_points += 1240  # from dire bear form
         self.hit_points -= 180  # needed to make things add up
         self.hit_points += 69 * 10 * 1.2  # base stamina
+        self.stat_factor = 1  # without BoK and zg
 
         self.enemy_parry_chance = 14  # (%)
         self.enemy_dodge_chance = 6.5  # (%)
         self.chance_to_miss = 9  # (%)
+
+        if fight_info.is_fully_buffed:
+            # TODO make sure that bok and zg are added prior to any other stat buffs
+            self.add_player_buffs()
+            self.add_world_buffs()
+
+    def add_player_buffs(self):
+        pass
+
+    def add_world_buffs(self):
+        # ony buff
+        self.crit += 5
+        self.attack_power += 140
+        # zg
+        self.stat_factor *= 1.15
+        # dmt
+        self.attack_power += 200
+        # songflower
+        self.crit += 5
+        self.agility_addition(15)
+        self.strength_addition(15)
+        # R.O.I.D.S
+        self.strength_addition(25)
 
     def print_stats(self):
         string = '\n'.join(['Attack speed: {:.2f}'.format(self.attack_speed),

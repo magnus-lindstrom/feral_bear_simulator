@@ -1,8 +1,12 @@
-from numpy import prod
+import numpy as np
+import bisect
+from items import *
 
 
-def get_item_iterator(sorted_items: dict):
+def get_item_iterator(sorted_items: dict, allow_kots_and_kiss_together=False):
     items_list = list(sorted_items.values())
+    if not allow_kots_and_kiss_together:
+        remove_kots_and_kiss_combo(items_list)
     item_count = get_item_count_by_slot(sorted_items)
     current_set_indeces = [0] * sorted_items.keys().__len__()
     sets_left_to_explore = True
@@ -24,8 +28,22 @@ def get_item_iterator(sorted_items: dict):
             current_set_indeces, item_count)
 
 
+def remove_kots_and_kiss_combo(items_list):
+    slot_nr_to_remove = None
+    item_nr_to_remove = None
+    for slot_nr, items in enumerate(items_list):
+        for item_nr, item in enumerate(items):
+            if type(item) is list:
+                if (Items.kiss_of_the_spider in item
+                        and Items.slayers_crest in item):
+                    slot_nr_to_remove = slot_nr
+                    item_nr_to_remove = item_nr
+    if slot_nr_to_remove is not None:
+        del items_list[slot_nr_to_remove][item_nr_to_remove]
+
+
 def get_nr_of_set_combinations(items_by_slot):
-    nr_sets = prod([len(val) for val in items_by_slot.values()])
+    nr_sets = np.prod([len(val) for val in items_by_slot.values()])
     return nr_sets
 
 
@@ -58,3 +76,78 @@ def get_zeros_dict_from_template(item_count):
     for key, _ in item_count.items():
         output[key] = 1
     return output
+
+
+class Secretary:
+    def __init__(self, tps_list_length):
+        # row 1 has tps, row 2 corresponding set_nr
+        self.top_tps_with_setnr_list = np.arange(tps_list_length)
+        temp_second_row = np.ones(tps_list_length) * -1
+        self.top_tps_with_setnr_list = np.vstack((self.top_tps_with_setnr_list,
+                                                  temp_second_row))
+        self.set_nr_to_set_dict = {}
+        self.tps_list_length = tps_list_length
+
+    def report_tps(self, tps, set_nr, set_names):
+
+        if tps > self.top_tps_with_setnr_list[0][0]:
+            # delete nr 0 first
+            delete_set = '{}'.format(self.top_tps_with_setnr_list[0][1])
+            if delete_set in self.set_nr_to_set_dict.keys():
+                del self.set_nr_to_set_dict[delete_set]
+            self.top_tps_with_setnr_list = np.delete(self.top_tps_with_setnr_list,
+                                                     0, axis=1)
+
+            if tps > self.top_tps_with_setnr_list[0][-1]:
+                self.top_tps_with_setnr_list = np.hstack((self.top_tps_with_setnr_list,
+                                                          [[tps], [set_nr]]))
+            else:
+                insertion_index = np.searchsorted(self.top_tps_with_setnr_list[0],
+                                                  tps, side='right')
+                self.top_tps_with_setnr_list = np.insert(self.top_tps_with_setnr_list,
+                          insertion_index, [tps, set_nr], axis=1)
+
+            add_set = '{}'.format(set_nr)
+            self.set_nr_to_set_dict[add_set] = set_names
+
+    def give_report(self):
+        appearances_per_slot_and_item = {s: {} for s in Slots}
+        for i in range(self.top_tps_with_setnr_list.shape[1]):
+            set_string = '{:.0f}'.format(self.top_tps_with_setnr_list[1][i])
+            item_set = self.set_nr_to_set_dict[set_string]
+            for item in item_set:
+                if item.name not in appearances_per_slot_and_item[item.slot].keys():
+                    appearances_per_slot_and_item[item.slot][item.name] = 0
+                appearances_per_slot_and_item[item.slot][item.name] += 1
+        print('Occurrences:')
+        for slot in appearances_per_slot_and_item.keys():
+            print('### {} ###'.format(slot))
+            for name, nr in appearances_per_slot_and_item[slot].items():
+                print('    {:<40} {:.0f}%'.format(name, 100*nr/self.tps_list_length))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

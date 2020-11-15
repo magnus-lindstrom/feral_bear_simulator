@@ -5,27 +5,25 @@ from items import *
 import logging
 
 
-def search_for_best_combo():
+def search_for_best_combo(list_length=100):
     fight_info = FightInfo(fight_length=120, is_fully_buffed=False, thick_hide=2)
     items = Items()
-    all_items = items.get_items_from_tag(exclude_tags=['frost_res', 'def', 'kots'])
+    all_items = items.get_items_from_tag(exclude_tags=['frost_res', 'def'])
     items_by_slot = get_items_by_slot(all_items)
     item_set_iterator = get_item_iterator(items_by_slot)
+    secretary = Secretary(list_length)
     character = Character(fight_info)
 
     print('Total nr of sets: {:,}'.format(get_nr_of_set_combinations(items_by_slot)))
-    highest_tps = 0
     for i_set, item_set in enumerate(item_set_iterator):
         if round(i_set/10000) == i_set/10000:
             logging.info("Iteration: {:,}".format(i_set))
         character.reset_character_gear_and_stats()
         character.add_items_and_validate_set(item_set)
         tps = character.stats.get_tps()
-        if tps > highest_tps:
-            highest_tps = tps
-            logging.info('{}: TPS: {:.2f}'.format(i_set, tps))
-            character.print_equipped_set()
-            character.print_stats()
+        secretary.report_tps(tps, i_set, item_set)
+
+    secretary.give_report()
 
 
 def single_set():
@@ -43,4 +41,4 @@ def single_set():
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     # single_set()
-    search_for_best_combo()
+    search_for_best_combo(list_length=30)
