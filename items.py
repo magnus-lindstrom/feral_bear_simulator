@@ -356,7 +356,7 @@ class Items:
         strength=10,
         agility=17,
         stamina=20,
-        tags=['current']
+        tags=['current', 'def']
     )
     belt_of_never_ending_agony = Item(
         name="Belt of Never-ending Agony",
@@ -378,7 +378,7 @@ class Items:
         agility=12,
         stamina=22,
         crit=1,
-        tags=['current']
+        tags=['current', 'bad']
     )
     leggings_of_apocalypse = Item(
         name="Leggings of Apocalypse",
@@ -469,6 +469,7 @@ class Items:
     band_of_unnatural_forces = Item(
         name="Band of Unnatural Forces",
         slot=Slots.finger,
+        attack_power=52,
         crit=1,
         hit=1,
         tags=['naxx']
@@ -486,6 +487,15 @@ class Items:
         slot=Slots.finger,
         agility=34,
         tags=['naxx']
+    )
+    quick_strike_ring = Item(
+        name="Quick Strike Ring",
+        slot=Slots.finger,
+        strength=5,
+        stamina=8,
+        crit=1,
+        attack_power=30,
+        tags=[]
     )
 
     # trinket
@@ -594,5 +604,6 @@ class Items:
         name="Magmus Stone",
         slot=Slots.off_hand,
         stamina=7,
-        fire_resistance=15
+        fire_resistance=15,
+        tags=['fire_res']
     )

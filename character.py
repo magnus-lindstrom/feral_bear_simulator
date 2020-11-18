@@ -7,15 +7,18 @@ from items import *
 class Stats:
 
     def __init__(self, fight_info):
+        self.stat_factor = 1  # without BoK and zg
         self.fight_length = fight_info.fight_length
         self.attack_speed = 2.5
         self.attack_power = 104 + 180 + 90  # base + bear bonus + predatory strikes
         self.attack_speed_tmp_increase = 0
         self.attack_speed_tmp_duration = 0
         self.attack_speed_tmp_cd = 0
-        self.crit = 13.15  # leader of the pack, sharpened claws, possible base agility
+        # TODO: move these to after world buffs
+        self.crit = 10.15  # sharpened claws, possible base agility
         self.dodge = 5.15  # night elf
         self.armor = 130
+
         self.arcane_resistance = 0
         self.fire_resistance = 0
         self.frost_resistance = 0
@@ -24,27 +27,77 @@ class Stats:
         self.hit_points = 1483  # base hp
         self.hit_points += 1240  # from dire bear form
         self.hit_points -= 180  # needed to make things add up
-        self.hit_points += 69 * 10 * 1.2  # base stamina
-        self.stat_factor = 1  # without BoK and zg
-
         self.enemy_parry_chance = 14  # (%)
         self.enemy_dodge_chance = 6.5  # (%)
         self.chance_to_miss = 9  # (%)
 
-        if fight_info.is_fully_buffed:
-            # TODO make sure that bok and zg are added prior to any other stat buffs
-            self.add_player_buffs()
+        if fight_info.has_player_buffs:
+            # must be run before add_world buffs and before the other player buffs
+            self.add_bok()
+        if fight_info.has_world_buffs:
             self.add_world_buffs()
+        if fight_info.has_player_buffs:
+            self.add_all_player_buffs_but_bok()
+        if fight_info.has_consumables:
+            self.add_food_buffs()
 
-    def add_player_buffs(self):
-        pass
+        # player base stats
+        self.stamina_addition(69)  # base stamina
+
+    def add_food_buffs(self):
+        # mongoose
+        self.agility_addition(25)
+        self.crit += 2
+        # smoked desert dumplings
+        self.strength_addition(20)
+        # juju might
+        self.attack_power += 40
+        # juju power
+        self.strength_addition(30)
+        # R.O.I.D.S
+        self.strength_addition(25)
+        # gordok green grog
+        self.stamina_addition(10)
+        # flask of the titans
+        self.hit_points += 1200
+
+    def add_bok(self):
+        self.stat_factor *= 1.1
+
+    def add_all_player_buffs_but_bok(self):
+        # battle shout, increased by talents
+        self.attack_power += 232 * 1.25
+        # gift of the wild, increased by talents
+        self.armor += 285 * 1.35
+        self.all_stats_addition(12 * 1.35)
+        self.all_resistances_addition(20 * 1.35)
+        # leader of the pack
+        self.crit += 3
+        # trueshot aura
+        self.attack_power += 100
+        # BoM, increased by talents
+        self.attack_power += 185 * 1.2
+        # prayer of fortitude, increased by talents
+        self.stamina_addition(54 * 1.3)
+
+    def all_resistances_addition(self, increase):
+        self.arcane_resistance += increase
+        self.fire_resistance += increase
+        self.frost_resistance += increase
+        self.nature_resistance += increase
+        self.shadow_resistance += increase
+
+    def all_stats_addition(self, increase):
+        self.strength_addition(increase)
+        self.agility_addition(increase)
+        self.stamina_addition(increase)
 
     def add_world_buffs(self):
+        # zg
+        self.stat_factor *= 1.15
         # ony buff
         self.crit += 5
         self.attack_power += 140
-        # zg
-        self.stat_factor *= 1.15
         # dmt
         self.attack_power += 200
         # songflower
@@ -125,14 +178,18 @@ class Stats:
         # weapon
         self.strength_addition(15)
 
+    def stamina_addition(self, stamina):
+        # 12 atp per strength
+        self.hit_points += self.stat_factor * 12 * stamina
+
     def agility_addition(self, agi):
-        self.crit += agi / 20
-        self.dodge += agi / 20
-        self.armor += agi * 2
+        self.crit += self.stat_factor * agi / 20
+        self.dodge += self.stat_factor * agi / 20
+        self.armor += self.stat_factor * agi * 2
 
     def strength_addition(self, strength):
         # 2 atp per strength
-        self.attack_power += 2 * strength
+        self.attack_power += self.stat_factor * 2 * strength
 
     def get_tps(self):
         if self.chance_to_miss == 9:

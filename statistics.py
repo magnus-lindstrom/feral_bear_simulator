@@ -105,12 +105,15 @@ class Secretary:
                 insertion_index = np.searchsorted(self.top_tps_with_setnr_list[0],
                                                   tps, side='right')
                 self.top_tps_with_setnr_list = np.insert(self.top_tps_with_setnr_list,
-                          insertion_index, [tps, set_nr], axis=1)
+                                                         insertion_index, [tps, set_nr],
+                                                         axis=1)
 
             add_set = '{}'.format(set_nr)
             self.set_nr_to_set_dict[add_set] = set_names
 
     def give_report(self):
+        self.print_best_n_sets()
+
         appearances_per_slot_and_item = {s: {} for s in Slots}
         for i in range(self.top_tps_with_setnr_list.shape[1]):
             set_string = '{:.0f}'.format(self.top_tps_with_setnr_list[1][i])
@@ -119,11 +122,23 @@ class Secretary:
                 if item.name not in appearances_per_slot_and_item[item.slot].keys():
                     appearances_per_slot_and_item[item.slot][item.name] = 0
                 appearances_per_slot_and_item[item.slot][item.name] += 1
+
         print('Occurrences:')
         for slot in appearances_per_slot_and_item.keys():
             print('### {} ###'.format(slot))
             for name, nr in appearances_per_slot_and_item[slot].items():
                 print('    {:<40} {:.0f}%'.format(name, 100*nr/self.tps_list_length))
+
+        print(self.top_tps_with_setnr_list[0])
+
+    def print_best_n_sets(self, n=3):
+        for i in range(n):
+            set_string = '{:.0f}'.format(self.top_tps_with_setnr_list[1][-1-i])
+            print('## Set nr {}, {:.2f}tps ###'
+                  .format(i+1, self.top_tps_with_setnr_list[0][-1-i]))
+            for item in self.set_nr_to_set_dict[set_string]:
+                print('{:<20} {}'.format(item.slot, item.name))
+            print()
 
 
 
