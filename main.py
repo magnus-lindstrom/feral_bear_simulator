@@ -8,6 +8,7 @@ import logging
 def search_for_best_combo(fight_info, list_length=100):
     items = Items()
     all_items = items.get_items_from_tag(exclude_tags=['frost_res', 'fire_res', 'def', 'bad'])
+    # all_items = items.get_items_from_tag(include_tags='got', exclude_all=True)
     items_by_slot = get_items_by_slot(all_items)
     item_set_iterator = get_item_iterator(items_by_slot)
     secretary = Secretary(list_length)
@@ -38,7 +39,7 @@ def single_set(fight_info):
 
 if __name__ == '__main__':
     fi = FightInfo(fight_length=120, has_player_buffs=True, has_consumables=True,
-                   has_world_buffs=False, thick_hide=2)
+                   has_world_buffs=True, thick_hide=2)
     logging.basicConfig(level=logging.INFO)
     # single_set(fi)
-    search_for_best_combo(fi, list_length=30)
+    search_for_best_combo(fi, list_length=10)

@@ -160,7 +160,7 @@ class Items:
                        and not attr.startswith("__")]
         return [self.__getattribute__(name) for name in field_names]
 
-    def get_items_from_tag(self, include_tags=None, exclude_tags=None):
+    def get_items_from_tag(self, include_tags=None, exclude_tags=None, exclude_all=False):
         # accepts both a list of tags and individual tags
         if include_tags is None: include_tags = []
         if exclude_tags is None: exclude_tags = []
@@ -170,10 +170,14 @@ class Items:
             exclude_tags = [exclude_tags]
         items = self.get_all_items()
 
-        # only keep the items that has no exclude tags, unless it also has an include tag
-        items = [item for item in items
-                 if not any([excl_tag in item.tags for excl_tag in exclude_tags])
-                 or any([incl_tag in item.tags for incl_tag in include_tags])]
+        if exclude_all:
+            items = [item for item in items
+                     if any([incl_tag in item.tags for incl_tag in include_tags])]
+        else:
+            # only keep the items that has no exclude tags, unless it also has an include tag
+            items = [item for item in items
+                     if not any([excl_tag in item.tags for excl_tag in exclude_tags])
+                     or any([incl_tag in item.tags for incl_tag in include_tags])]
         return items
 
     # head
@@ -185,7 +189,7 @@ class Items:
         agility=19,
         stamina=36,
         dodge=1,
-        tags=['current']
+        tags=['current', 'got']
     )
     polar_helmet = Item(
         name="Polar Helmet",
@@ -205,13 +209,14 @@ class Items:
         defense=10,
         dodge=1,
         hit=1,
-        tags=['def']
+        tags=['def', 'got']
     )
     prestors_talisman_of_connivery = Item(
         name="Prestor's Talisman of Connivery",
         slot=Slots.neck,
         agility=30,
-        hit=1
+        hit=1,
+        tags=['got']
     )
     onyxia_tooth_pendant = Item(
         name="Onyxia tooth pendant",
@@ -220,7 +225,7 @@ class Items:
         stamina=9,
         crit=1,
         hit=1,
-        tags=['current']
+        tags=['current', 'got']
     )
     sadists_collar = Item(
         name="Sadists Collar",
@@ -238,6 +243,13 @@ class Items:
         attack_power=26,
         tags=['naxx']
     )
+    barbed_choker = Item(
+        name="Barbed Choker",
+        slot=Slots.neck,
+        stamina=10,
+        crit=1,
+        attack_power=44
+    )
 
     # shoulders
     mantle_of_wicked_revenge = Item(
@@ -247,14 +259,15 @@ class Items:
         strength=16,
         agility=30,
         stamina=14,
-        tags=['current']
+        tags=['current', 'got']
     )
     truestrike_shoulders = Item(
         name="Truestrike Shoulders",
         slot=Slots.shoulders,
         armor=129,
         hit=2,
-        attack_power=24
+        attack_power=24,
+        tags=['got']
     )
     polar_shoulder_pads = Item(
         name="Polar Shoulder Pads",
@@ -274,7 +287,7 @@ class Items:
         agility=16,
         stamina=15,
         hit=1,
-        tags=['current']
+        tags=['current', 'got']
     )
     cryptfiend_silk_cloak = Item(
         name="Cryptfiend Silk Cloak",
@@ -312,7 +325,7 @@ class Items:
         armor=392,
         strength=40,
         stamina=22,
-        tags=['current']
+        tags=['current', 'got']
     )
     ghoul_skin_tunic = Item(
         name="Ghoul Skin Tunic",
@@ -333,7 +346,7 @@ class Items:
         agility=16,
         stamina=14,
         hit=1,
-        tags=['current']
+        tags=['current', 'got']
     )
 
     # hands
@@ -345,7 +358,7 @@ class Items:
         agility=20,
         stamina=6,
         hit=1,
-        tags=['current']
+        tags=['current', 'got']
     )
 
     # waist
@@ -356,7 +369,7 @@ class Items:
         strength=10,
         agility=17,
         stamina=20,
-        tags=['current', 'def']
+        tags=['current', 'def', 'got']
     )
     belt_of_never_ending_agony = Item(
         name="Belt of Never-ending Agony",
@@ -378,7 +391,7 @@ class Items:
         agility=12,
         stamina=22,
         crit=1,
-        tags=['current', 'bad']
+        tags=['current', 'bad', 'got']
     )
     leggings_of_apocalypse = Item(
         name="Leggings of Apocalypse",
@@ -399,7 +412,7 @@ class Items:
         stamina=22,
         attack_power=44,
         hit=2,
-        tags=['current']
+        tags=['current', 'got']
     )
     boots_of_displacement = Item(
         name="Boots of Displacement",
@@ -409,6 +422,14 @@ class Items:
         stamina=21,
         tags=['naxx']
     )
+    hive_tunners_boots = Item(
+        name="Hive Tunnelers Boots",
+        slot=Slots.feet,
+        armor=216,
+        strength=10,
+        agility=17,
+        stamina=30
+    )
 
     # finger
     band_of_accuria = Item(
@@ -417,7 +438,7 @@ class Items:
         agility=16,
         stamina=10,
         hit=2,
-        tags=['current']
+        tags=['current', 'got']
     )
     signet_ring_of_the_bronze_dragonflight = Item(
         name="Signet ring of the bronze dragonflight",
@@ -425,14 +446,15 @@ class Items:
         agility=24,
         stamina=13,
         hit=1,
-        tags=['current']
+        tags=['current', 'got']
     )
     master_dragonslayers_ring = Item(
         name="Master dragonslayers ring",
         slot=Slots.finger,
         stamina=14,
         attack_power=48,
-        hit=1
+        hit=1,
+        tags=['got']
     )
     ring_of_emperor_vek_lor = Item(
         name="Ring of Emperor Vek'lor",
@@ -441,7 +463,7 @@ class Items:
         agility=12,
         stamina=18,
         defense=9,
-        tags=['def']
+        tags=['def', 'got']
     )
     heavy_dark_iron_ring = Item(
         name="Heavy Dark Iron Ring",
@@ -449,7 +471,7 @@ class Items:
         armor=110,
         stamina=20,
         defense=5,
-        tags=['def']
+        tags=['def', 'got']
     )
     circle_of_applied_force = Item(
         name="Circle of Applied Force",
@@ -497,13 +519,20 @@ class Items:
         attack_power=30,
         tags=[]
     )
+    ring_of_the_qiraji_fury = Item(
+        name="Ring of the Qiraji Fury",
+        slot=Slots.finger,
+        stamina=12,
+        attack_power=40,
+        crit=1
+    )
 
     # trinket
     earthstrike = Item(
         name="Earthstrike",
         slot=Slots.trinket,
         attack_power_per_two_minutes=47,
-        tags=['current']
+        tags=['current', 'got']
     )
     drake_fang_talisman = Item(
         name="Drake fang talisman",
@@ -511,7 +540,7 @@ class Items:
         attack_power=56,
         hit=2,
         dodge=1,
-        tags=['current']
+        tags=['current', 'got']
     )
     mark_of_tyranny = Item(
         name="Mark of Tyranny",
@@ -519,12 +548,13 @@ class Items:
         armor=180,
         dodge=1,
         arcane_resistance=10,
-        tags=['def']
+        tags=['def', 'got']
     )
     heart_of_the_scale = Item(
         name= "Heart of the Scale",
         slot=Slots.trinket,
-        fire_resistance=20  # assume fight shorter than 5min
+        fire_resistance=20,  # assume fight shorter than 5min
+        tags=['got']
     )
     smoking_heart_of_the_mountain = Item(
         name="Smoking Heart of the Mountain",
@@ -535,7 +565,7 @@ class Items:
         frost_resistance=20,
         nature_resistance=20,
         shadow_resistance=20,
-        tags=['def']
+        tags=['def', 'got']
     )
     kiss_of_the_spider = Item(
         name="Kiss of the Spider",
@@ -569,7 +599,7 @@ class Items:
         armor=250,
         stamina=12,
         defense=8,
-        tags=['def']
+        tags=['def', 'got']
     )
 
     # main hand
@@ -581,7 +611,7 @@ class Items:
         stamina=12,
         attack_power=280,
         defense=8,
-        tags=['current']
+        tags=['current', 'got']
     )
     the_end_of_dreams = Item(
         name="The End of Dreams",
@@ -598,12 +628,12 @@ class Items:
         strength=8,
         agility=8,
         stamina=8,
-        tags=['current']
+        tags=['current', 'got']
     )
     magmus_stone = Item(
         name="Magmus Stone",
         slot=Slots.off_hand,
         stamina=7,
         fire_resistance=15,
-        tags=['fire_res']
+        tags=['fire_res', 'got']
     )
